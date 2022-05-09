@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/kenneth-bakke/RealWork-Vacation-App#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "concurrently": "^7.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
@@ -27,6 +28,7 @@
     "nodemon": "^2.0.16"
   },
   "devDependencies": {
+    "@faker-js/faker": "^6.3.1",
     "concurrently": "^7.1.0",
     "cors": "^2.8.5",
     "express": "^4.18.1",

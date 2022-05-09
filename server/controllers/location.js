@@ -1,23 +1,33 @@
 const API_KEY = process.env.OPEN_WEATHER_KEY;
 const API = process.env.OPEN_WEATHER_API;
+const NODE_VERSION = process.versions.node.split('.')[0];
+
+const axios = require('axios');
+
+// For Mock calls only, remove when client is linked
+const { faker } = require('@faker-js/faker');
+const { address } = faker;
+const mockLocation = {
+  lat: address.latitude(),
+  lon: address.longitude(),
+  part: '',
+};
 
 module.exports = {
   getLocation: async function (req, res) {
-    const { lat, lon, part } = req.query;
-    const API_URL = part
-      ? `${API}lat=${lat}&lon=${lon}&exclude=${part}&appid=${API_KEY}`
-      : `${API}lat=${lat}&lon=${lon}&appid=${API_KEY}`;
+    // const { lat, lon, part } = req.query;
+    const { lat, lon, part } = mockLocation;
+    const API_URL =
+      API +
+      new URLSearchParams({ lat: lat, lon: lon, part: part, appid: API_KEY });
 
-    const response = await fetch(API_URL);
+    const response = await axios.get(API_URL);
 
-    if (response.ok) {
-      const data = await res.json();
-
-      try {
-        res.status(200).send(text);
-      } catch (e) {
-        res.status(404).send('Oopsie');
-      }
+    try {
+      const { data } = response;
+      res.status(response.status).send(data);
+    } catch (e) {
+      res.status(response.status).send(e);
     }
   },
 };
