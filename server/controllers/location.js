@@ -4,19 +4,16 @@ const NODE_VERSION = process.versions.node.split('.')[0];
 
 const axios = require('axios');
 
-// For Mock calls only, remove when client is linked
-const { faker } = require('@faker-js/faker');
-const { address } = faker;
-const mockLocation = {
-  lat: address.latitude(),
-  lon: address.longitude(),
-  part: '',
-};
+var cache = {};
+
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
 
 module.exports = {
   getLocation: async function (req, res) {
     const { lat, lon, part, exclude, units, lang } = req.query;
-    // const { lat, lon, part } = mockLocation;
+
     const API_URL =
       API +
       new URLSearchParams({
@@ -29,13 +26,18 @@ module.exports = {
         appid: API_KEY,
       });
 
-    const response = await axios.get(API_URL);
+    if (isEmpty(cache) || !cache[lat + lon]) {
+      const response = await axios.get(API_URL);
 
-    try {
-      const { data } = response;
-      res.status(response.status).send(JSON.stringify(data));
-    } catch (e) {
-      res.status(response.status).send(e);
+      try {
+        const { data } = response;
+        cache[lat + ',' + lon] = data;
+        res.status(response.status).send(JSON.stringify(data));
+      } catch (e) {
+        res.status(response.status).send(e);
+      }
+    } else {
+      res.status(200).send(JSON.stringify(cache));
     }
   },
 };
