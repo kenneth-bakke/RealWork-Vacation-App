@@ -269,14 +269,14 @@ export default function App() {
           className='flex flex-row items-baseline p-px m-auto'
           key={city.name + city.lat + ',' + city.lng}
         >
-          <p className='flex flex-col items-left p-px'>
+          <div className='flex flex-col items-left p-px'>
             <h3 className='font-semibold'>{city?.name}:</h3>
             current temp: {city?.details?.current?.temp}
             {`\u00b0`}F
             <span>
               current wind speed: {city?.details?.current?.wind_speed}
             </span>
-          </p>
+          </div>
         </div>
       );
     });
@@ -289,14 +289,14 @@ export default function App() {
           className='flex flex-row items-baseline p-px'
           key={city.name + city.lat + ',' + city.lng}
         >
-          <p className='flex flex-col items-left p-px'>
+          <div className='flex flex-col items-left p-px'>
             <h3 className='font-semibold'>{city?.name}:</h3>
             current temp: {city?.details?.current?.temp}
             {`\u00b0`}F
             <span>
               current wind speed: {city?.details?.current?.wind_speed}
             </span>
-          </p>
+          </div>
         </div>
       );
     });
@@ -329,9 +329,7 @@ export default function App() {
           className='flex flex-row items-baseline p-px m-auto'
           key={city.name + city.lat + ',' + city.lng}
         >
-          <p>
-            <h3 className='font-semibold'>{city.name}</h3>
-          </p>
+          <h3 className='font-semibold'>{city.name}</h3>
         </div>
       );
     });
