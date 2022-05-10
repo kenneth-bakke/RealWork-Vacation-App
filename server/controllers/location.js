@@ -6,7 +6,6 @@ const axios = require('axios');
 
 // For Mock calls only, remove when client is linked
 const { faker } = require('@faker-js/faker');
-const { UNARYLIKE_TYPES } = require('@babel/types');
 const { address } = faker;
 const mockLocation = {
   lat: address.latitude(),
