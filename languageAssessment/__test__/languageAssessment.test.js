@@ -22,3 +22,5 @@ describe('Unused letters', () => {
     expect(unused).toBe('');
   });
 });
+
+describe('Particle chamber', () => {});
