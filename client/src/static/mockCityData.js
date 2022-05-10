@@ -102,10 +102,5 @@ export const cityData = {
       lat: 37.9375,
       lng: 107.8123,
     },
-    {
-      name: 'Anoka, MN',
-      lat: 45.1977,
-      lng: 93.3872,
-    },
   ],
 };
