@@ -1,5 +1,9 @@
 const SERVER_URL = 'http://localhost:3001/location/?';
 
+const capitalize = (string) => {
+  return string[0].toUpperCase() + string.slice(1);
+};
+
 const cityExists = (cityData, city) => {
   for (let i = 0; i < cityData.length; i++) {
     const existingCity = cityData[i];
@@ -53,6 +57,7 @@ const getCityWeatherDetails = async (lat, lon) => {
 };
 
 module.exports = {
+  capitalize: capitalize,
   cityExists: cityExists,
   contains: contains,
   checkLocalStorage: checkLocalStorage,

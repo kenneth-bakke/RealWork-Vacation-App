@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AppContext } from './Context/AppContext';
+import AppContext from './Context/AppContext';
 import CityList from './CityList/CityList';
+import CheckBox from './utils/CheckBox';
 import { cityData } from './static/mockCityData';
 import {
   cityExists,
@@ -21,6 +22,7 @@ export default function App() {
   const [skiCitiesData, setSkiCitiesData] = useState(cityData.skiCities);
   const [recommendedCities, setRecommendedCities] = useState([]);
   const [rejectedCities, setRejectedCities] = useState([]);
+  const [showUnrecommended, setShowUnrecommended] = useState(true);
 
   // Only want to run these on load instead of every change of lat or lon
   useEffect(() => {
@@ -220,21 +222,14 @@ export default function App() {
             <p>
               <strong>Select the appropriate optical cable:</strong>
             </p>
-            <ul className='category__nav flex flex-row m-auto p-px'>
-              <li>
-                <a data-target='metal' href='#'>
-                  Metal
-                </a>
-              </li>
-              <li>
-                <a data-target='standart' href='#'>
-                  Standard
-                </a>
-              </li>
-            </ul>
+            <div className='category__nav flex flex-row m-auto p-px justify-around align-middle fixed'>
+              <CheckBox name='beach' />
+              <CheckBox name='skiing' />
+              <CheckBox name='hide' />
+            </div>
           </div>
           {renderCities(recommendedCities)}
-          {renderCities(rejectedCities)}
+          {showUnrecommended ? renderCities(rejectedCities) : null}
         </div>
       </>
     );
@@ -245,23 +240,25 @@ export default function App() {
   };
 
   return (
-    <>
-      {renderHeader()}
-      <main>
-        <div className='left-20 flex flex-col items-left text-sm p-px m-1'>
-          <h2>
-            Current temperature: {localTemp ? localTemp : ' '}
-            {'\u00B0'} F The temperature feels like:{' '}
-            {localTempFeelsLike ? localTempFeelsLike : ' '}
-            {'\u00B0'} F
-          </h2>
-        </div>
-        <div className='items-center container mx-auto p-8 m-10'>
-          <div className='flex flex-row items-stretch container mx-auto p-8'>
-            {recommendedCities.length > 0 ? renderCityGrid() : null}
+    <div>
+      <AppContext.Provider value={{ showUnrecommended, setShowUnrecommended }}>
+        {renderHeader()}
+        <main>
+          <div className='left-20 flex flex-col items-left text-sm p-px m-1'>
+            <h2>
+              Current temperature: {localTemp ? localTemp : ' '}
+              {'\u00B0'} F The temperature feels like:{' '}
+              {localTempFeelsLike ? localTempFeelsLike : ' '}
+              {'\u00B0'} F
+            </h2>
           </div>
-        </div>
-      </main>
-    </>
+          <div className='items-center container mx-auto p-8 m-10'>
+            <div className='flex flex-row items-stretch container mx-auto p-8'>
+              {recommendedCities.length > 0 ? renderCityGrid() : null}
+            </div>
+          </div>
+        </main>
+      </AppContext.Provider>
+    </div>
   );
 }
