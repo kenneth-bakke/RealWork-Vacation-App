@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppContext } from './Context/AppContext';
+import CityList from './CityList/CityList';
 import { cityData } from './static/mockCityData';
-
-const SERVER_URL = 'http://localhost:3001/location/?';
+import {
+  cityExists,
+  contains,
+  checkLocalStorage,
+  getCityWeatherDetails,
+  SERVER_URL,
+} from './utils/utils';
 
 export default function App() {
   const [lat, setLat] = useState(0);
@@ -132,26 +138,6 @@ export default function App() {
     }
   };
 
-  const getCityWeatherDetails = async (lat, lon) => {
-    const locationURL =
-      SERVER_URL +
-      new URLSearchParams({ lat: lat, lon: lon, units: 'imperial' });
-
-    const response = await fetch(locationURL, {
-      method: 'get',
-      headers: {
-        ContentType: 'application/json',
-      },
-    });
-
-    try {
-      const cityWeatherDetails = response.json();
-      return cityWeatherDetails;
-    } catch (e) {
-      console.log(e.message);
-    }
-  };
-
   const filterCities = () => {
     let possibleCities = [];
     let notPossibleCities = [];
@@ -213,164 +199,69 @@ export default function App() {
     setRejectedCities(notPossibleCities);
   };
 
-  const cityExists = (cityData, city) => {
-    for (let i = 0; i < cityData.length; i++) {
-      const existingCity = cityData[i];
-      if (existingCity.name === city.name) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-
-  const contains = (reasons, reason) => {
-    for (let i = 0; i < reasons.length; i++) {
-      if (reasons[i] === reason) return true;
-    }
-    return false;
-  };
-
-  const checkLocalStorage = (key) => {
-    try {
-      const storageData = localStorage.getItem(key);
-      if (storageData) {
-        return JSON.parse(storageData);
-      } else {
-        localStorage.setItem(key, '[]');
-        return null;
-      }
-    } catch (e) {
-      console.log(e.message);
-      return null;
-    }
-  };
-
-  // Rendering
-  const renderOptions = () => {
+  const renderHeader = () => {
     return (
-      <div className='p-8 m-10'>
-        <h2 className='font-semibold text-lg p-px mx-auto'>
-          Cities with beaches
-        </h2>
-        {renderBeachCities()}
-        <h2 className='font-semibold text-lg p-px mx-auto'>
-          Skiing Destinations
-        </h2>
-        {renderSkiCities()}
-      </div>
+      <header className='border-b-2'>
+        <div className='flex flex-row items-end justify-start text-xl first-letter p-px m-3 '>
+          <img className='max-h-10 max-w-10' src='plane.svg' alt='plane logo' />
+          <h1 className='text-2xl font-semibold'>
+            Your next vacation is a click away
+          </h1>
+        </div>
+      </header>
     );
   };
 
-  const renderBeachCities = () => {
-    return beachCitiesData.map((city) => {
-      return (
-        <div
-          className='flex flex-row items-baseline p-px m-auto'
-          key={city.name + city.lat + ',' + city.lng}
-        >
-          <div className='flex flex-col items-left p-px'>
-            <h3 className='font-semibold'>{city?.name}:</h3>
-            current temp: {city?.details?.current?.temp}
-            {`\u00b0`}F
-            <span>
-              current wind speed: {city?.details?.current?.wind_speed}
-            </span>
-          </div>
-        </div>
-      );
-    });
-  };
-
-  const renderSkiCities = () => {
-    return skiCitiesData.map((city) => {
-      return (
-        <div
-          className='flex flex-row items-baseline p-px'
-          key={city.name + city.lat + ',' + city.lng}
-        >
-          <div className='flex flex-col items-left p-px'>
-            <h3 className='font-semibold'>{city?.name}:</h3>
-            current temp: {city?.details?.current?.temp}
-            {`\u00b0`}F
-            <span>
-              current wind speed: {city?.details?.current?.wind_speed}
-            </span>
-          </div>
-        </div>
-      );
-    });
-  };
-
-  const renderSuggestions = () => {
+  const renderCityGrid = () => {
     return (
-      <div className='flex flex-row items-stretch mx-auto p-8'>
-        {renderOptions()}
-        <div className='p-8 m-10'>
-          <h2 className='font-semibold text-lg'>
-            Here are some recommendations based on your location:
-          </h2>
-          {renderRecommendedCities()}
+      <>
+        <div id='city grid component'>
+          <div className='col-xs-12'>
+            <p>
+              <strong>Select the appropriate optical cable:</strong>
+            </p>
+            <ul className='category__nav flex flex-row m-auto p-px'>
+              <li>
+                <a data-target='metal' href='#'>
+                  Metal
+                </a>
+              </li>
+              <li>
+                <a data-target='standart' href='#'>
+                  Standard
+                </a>
+              </li>
+            </ul>
+          </div>
+          {renderCities(recommendedCities)}
+          {renderCities(rejectedCities)}
         </div>
-        <div className='p-8 m-10'>
-          <h2 className='font-semibold text-lg'>
-            We do not recommend these places for your vacation:
-          </h2>
-          {renderRejectedCities()}
-        </div>
-      </div>
+      </>
     );
   };
 
-  const renderRecommendedCities = () => {
-    return recommendedCities.map((city) => {
-      return (
-        <div
-          className='flex flex-row items-baseline p-px m-auto'
-          key={city.name + city.lat + ',' + city.lng}
-        >
-          <h3 className='font-semibold'>{city.name}</h3>
-        </div>
-      );
-    });
-  };
-
-  const renderRejectedCities = () => {
-    return rejectedCities.map((city) => {
-      return (
-        <div
-          className='flex flex-row items-baseline p-px m-auto'
-          key={city.name + city.lat + ',' + city.lng}
-        >
-          <span>
-            <h3 className='font-semibold'>{city.name}</h3> It's{' '}
-            {city.reasons.map((reason) => reason.toString()).join(' and ')}
-          </span>
-        </div>
-      );
-    });
+  const renderCities = (cities) => {
+    return <CityList cities={cities} />;
   };
 
   return (
-    <main>
-      <div className='items-center container mx-auto p-8 m-10'>
-        <div className='flex flex-col items-center text-xl'>
-          <h1>Time for a vacation!</h1>
+    <>
+      {renderHeader()}
+      <main>
+        <div className='left-20 flex flex-col items-left text-sm p-px m-1'>
           <h2>
-            The current temperature in your area is{' '}
-            {localTemp ? localTemp : ' '}
-            {'\u00B0'} F
-          </h2>
-          <h3>
-            The temperature feels like{' '}
+            Current temperature: {localTemp ? localTemp : ' '}
+            {'\u00B0'} F The temperature feels like:{' '}
             {localTempFeelsLike ? localTempFeelsLike : ' '}
             {'\u00B0'} F
-          </h3>
+          </h2>
         </div>
-        <div className='flex flex-row items-stretch container mx-auto p-8'>
-          {renderSuggestions()}
+        <div className='items-center container mx-auto p-8 m-10'>
+          <div className='flex flex-row items-stretch container mx-auto p-8'>
+            {recommendedCities.length > 0 ? renderCityGrid() : null}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
