@@ -167,9 +167,23 @@ export default function App() {
       }
 
       if (city?.reasons?.length > 0) {
-        setRejectedCities((prevRejected) => [...prevRejected, city]);
+        if (rejectedCities.includes(city)) {
+          const indexOfOldVersion = rejectedCities.indexOf(city);
+          const prevRejectedCities = [...rejectedCities];
+          prevRejectedCities[indexOfOldVersion] = city;
+          setRejectedCities(prevRejectedCities);
+        } else {
+          setRejectedCities((prevRejected) => [...prevRejected, city]);
+        }
       } else {
-        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+        if (recommendedCities.includes(city)) {
+          const indexOfOldVersion = recommendedCities.indexOf(city);
+          const prevRecommendedCities = [...recommendedCities];
+          prevRecommendedCities[indexOfOldVersion] = city;
+          setRejectedCities(prevRecommendedCities);
+        } else {
+          setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+        }
       }
     });
 
@@ -184,9 +198,23 @@ export default function App() {
       }
 
       if (city?.reasons?.length > 0) {
-        setRejectedCities((prevRejected) => [...prevRejected, city]);
+        if (rejectedCities.includes(city)) {
+          const indexOfOldVersion = rejectedCities.indexOf(city);
+          const prevRejectedCities = [...rejectedCities];
+          prevRejectedCities[indexOfOldVersion] = city;
+          setRejectedCities(prevRejectedCities);
+        } else {
+          setRejectedCities((prevRejected) => [...prevRejected, city]);
+        }
       } else {
-        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+        if (recommendedCities.includes(city)) {
+          const indexOfOldVersion = recommendedCities.indexOf(city);
+          const prevRecommendedCities = [...recommendedCities];
+          prevRecommendedCities[indexOfOldVersion] = city;
+          setRejectedCities(prevRecommendedCities);
+        } else {
+          setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+        }
       }
     });
   };
@@ -209,6 +237,10 @@ export default function App() {
             {'\u00B0'} F
           </h2>
         </div>
+        <p>
+          <strong>Location type</strong>
+        </p>
+        <CityFilterBar />
       </header>
     );
   };
@@ -217,10 +249,6 @@ export default function App() {
     return (
       <>
         <div className='grid-cols-6'>
-          <p>
-            <strong>Location type</strong>
-          </p>
-          <CityFilterBar />
           {renderCities(recommendedCities)}
           {showUnrecommended ? renderCities(rejectedCities) : null}
         </div>
@@ -247,7 +275,7 @@ export default function App() {
         {renderHeader()}
         <main>
           <div className='items-center container mx-auto p-9 m-20'>
-            <div className='flex flex-row items-stretch container mx-auto p-8'>
+            <div className='flex flex-row items-stretch container mx-auto p-24'>
               {renderCityGrid()}
             </div>
           </div>
