@@ -9,8 +9,10 @@ export default function CityCard({ name, type, temp, wind, reasons }) {
     return (
       <div className={`w-full sm:w-1/2 md:w-1/3 flex flex-col p-3 shrink`}>
         <div className='bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col'>
-          <div className='p-4 flex-1 flex flex-col'>
-            <a href='#'></a>
+          <div
+            className={`p-4 flex-1 flex flex-col`}
+            style={{ color: isRecommended ? 'black' : 'gray' }}
+          >
             <h3 className='mb-4 text-2xl'>{name}</h3>
             <div className={`mb-4  text-sm flex-1 flex-row`}>
               current temp: {temp}
