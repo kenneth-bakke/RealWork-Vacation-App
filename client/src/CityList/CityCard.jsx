@@ -5,15 +5,9 @@ export default function CityCard({ name, type, temp, wind, reasons }) {
   const [isRecommended, setIsRecommended] = useState(reasons.length === 0);
   const { showSki, showBeach } = useContext(AppContext);
 
-  // if this card is type beach and showBeach is true
-  // display it
-  // else if this card is type ski and showSki is true
-  // display it
-  // else
-  // don't display anything
   if ((type === 'beach' && showBeach) || (type === 'ski' && showSki)) {
     return (
-      <div className={`w-full sm:w-1/2 md:w-1/3 flex flex-col p-3 `}>
+      <div className={`w-full sm:w-1/2 md:w-1/3 flex flex-col p-3 shrink`}>
         <div className='bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col'>
           <div className='p-4 flex-1 flex flex-col'>
             <a href='#'></a>

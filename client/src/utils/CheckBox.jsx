@@ -27,7 +27,7 @@ export default function CheckBox({ name }) {
   return (
     <div
       onChange={toggleChecked}
-      className='flex flex-row border-grey-light text-grey h-6 w-6 items-baseline rounded'
+      className='flex flex-row border-grey-light text-grey h-6 w-6 p-2 m-1 items-baseline rounded static inline-block'
     >
       <input
         type='checkbox'

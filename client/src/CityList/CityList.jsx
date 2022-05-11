@@ -4,7 +4,6 @@ import CityCard from './CityCard';
 export default function CityList({ cities }) {
   return (
     <>
-      {/* <div className='flex flex-wrap m-3 p-px min-h-150 max-w-xs'> */}
       <div className='flex flex-wrap -m-3'>
         {cities?.map((city) => {
           return (
