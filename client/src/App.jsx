@@ -35,10 +35,10 @@ export default function App() {
   useEffect(() => {
     const clearId = setTimeout(() => {
       getLocation();
-      beachCitiesData.forEach((city) => {
+      beachCitiesData?.forEach((city) => {
         populateCityData('beachCities', city);
       });
-      skiCitiesData.forEach((city) => {
+      skiCitiesData?.forEach((city) => {
         populateCityData('skiCities', city);
       });
     }, 400);
