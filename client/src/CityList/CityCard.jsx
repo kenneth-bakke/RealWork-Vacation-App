@@ -5,7 +5,7 @@ export default function CityCard({ name, temp, wind, reasons, show }) {
 
   return (
     <div
-      className={`w-full sm:w-1/2 md:w-1/3 flex flex-col p-3 ${
+      className={`w-full sm:w-1/2 md:w-1/3 flex flex-col p-3 min-w-450 min-h-125${
         isRecommended ? 'text-black' : 'text-grey-300'
       }`}
     >

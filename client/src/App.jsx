@@ -220,9 +220,9 @@ export default function App() {
         <div id='city grid component'>
           <div className='col-xs-12'>
             <p>
-              <strong>Select the appropriate optical cable:</strong>
+              <strong>Location type</strong>
             </p>
-            <div className='category__nav flex flex-row m-auto p-px justify-around align-middle fixed'>
+            <div className='category__nav flex flex-row m-auto p-5 justify-evenly align-middle relative'>
               <CheckBox name='beach' />
               <CheckBox name='skiing' />
               <CheckBox name='hide' />
@@ -244,7 +244,7 @@ export default function App() {
       <AppContext.Provider value={{ showUnrecommended, setShowUnrecommended }}>
         {renderHeader()}
         <main>
-          <div className='left-20 flex flex-col items-left text-sm p-px m-1'>
+          <div className='left-20 flex flex-col flex-wrap items-left text-sm p-px m-1'>
             <h2>
               Current temperature: {localTemp ? localTemp : ' '}
               {'\u00B0'} F The temperature feels like:{' '}

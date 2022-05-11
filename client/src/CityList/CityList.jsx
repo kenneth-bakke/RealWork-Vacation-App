@@ -4,7 +4,7 @@ import CityCard from './CityCard';
 export default function CityList({ cities }) {
   return (
     <>
-      <div className='flex flex-wrap -m-3'>
+      <div className='flex flex-wrap -m-3 p-px m-auto'>
         {cities?.map((city) => {
           return (
             <CityCard
