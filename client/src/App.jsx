@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppContext from './Context/AppContext';
 import CityList from './CityList/CityList';
+import CityFilterBar from './CityList/CityFilterBar';
 import CheckBox from './utils/CheckBox';
 import { cityData } from './static/mockCityData';
 import {
   cityExists,
   contains,
-  checkLocalStorage,
   getCityWeatherDetails,
+  getLocalWithExpiry,
+  storeLocalWithExpiry,
+  hasWeatherWarning,
   SERVER_URL,
 } from './utils/utils';
 
@@ -23,192 +26,188 @@ export default function App() {
   const [recommendedCities, setRecommendedCities] = useState([]);
   const [rejectedCities, setRejectedCities] = useState([]);
   const [showUnrecommended, setShowUnrecommended] = useState(true);
+  const [showBeach, setShowBeach] = useState(true);
+  const [showSki, setShowSki] = useState(true);
+
+  const LOCAL_STORAGE_TTL_MS = 3600 * 1000;
 
   // Only want to run these on load instead of every change of lat or lon
   useEffect(() => {
-    getLocation();
-    beachCitiesData.forEach((city) => {
-      populateCityData('beachCities', city);
-    });
-    skiCitiesData.forEach((city) => {
-      populateCityData('skiCities', city);
-    });
+    const clearId = setTimeout(() => {
+      getLocation();
+      beachCitiesData.forEach((city) => {
+        populateCityData('beachCities', city);
+      });
+      skiCitiesData.forEach((city) => {
+        populateCityData('skiCities', city);
+      });
+    }, 400);
+    return () => clearTimeout(clearId);
   }, []);
 
   useEffect(() => {
     const clearId = setTimeout(() => {
-      if (lat && lon) {
-        getLocalWeatherDetails();
-      }
+      filterCities();
     }, 400);
-
     return () => clearTimeout(clearId);
-  }, [lat, lon]);
+  }, [beachCitiesData, skiCitiesData]);
 
-  useEffect(() => {
-    const clearId = setTimeout(() => {
-      if (localTemp) {
-        filterCities();
-      }
-    });
-
-    return () => clearTimeout(clearId);
-  }, [localTemp]);
-
-  // Set up
   const getLocation = () => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(function (position) {
-        setLat(position.coords.latitude);
-        setLon(position.coords.longitude);
-      });
-    } else {
-      alert('Could not determine your weather conditions');
-    }
-  };
-
-  const populateCityData = async (cityGroup, city) => {
-    const cityData = checkLocalStorage(cityGroup);
-    if (cityData && cityExists(cityData, city)) {
-      if (cityGroup === 'beachCities') {
-        setBeachCitiesData(cityData);
-      } else {
-        setSkiCitiesData(cityData);
-      }
-    } else {
-      await getCityWeatherDetails(city.lat, city.lng).then((details) => {
-        const cities = JSON.parse(localStorage.getItem(cityGroup));
-        city.details = details;
-        city.reasons = [];
-        cities.push(city);
-        localStorage.setItem(cityGroup, JSON.stringify(cities));
-      });
-      cityGroup === 'beachCities'
-        ? setBeachCitiesData((prev) => {
-            prev.forEach((existingCity) => {
-              if (existingCity.name === city.name) {
-                existingCity = city;
-              }
-            });
-            return prev;
-          })
-        : setSkiCitiesData((prev) => {
-            prev.forEach((existingCity) => {
-              if (existingCity.name === city.name) {
-                existingCity = city;
-              }
-            });
-            return prev;
-          });
-    }
-  };
-
-  const getLocalWeatherDetails = async () => {
     try {
-      const locationData = JSON.parse(localStorage.getItem('userLocationData'));
-      if (locationData) {
-        setUserLocationData(locationData);
-        setLocalTemp(Math.floor(locationData?.current?.temp));
-        setLocalTempFeelsLike(Math.floor(locationData?.current?.feels_like));
+      const storedLocationData = getLocalWithExpiry('userLocationData');
+      if (!storedLocationData) {
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(function (position) {
+            setLat(position.coords.latitude);
+            setLon(position.coords.longitude);
+          });
+          getLocalWeatherDetails();
+        } else {
+          alert('Could not determine your weather conditions');
+        }
       } else {
-        const locationURL =
-          SERVER_URL +
-          new URLSearchParams({ lat: lat, lon: lon, units: 'imperial' });
-
-        await fetch(locationURL, {
-          method: 'get',
-          headers: {
-            ContentType: 'application/json',
-          },
-        })
-          .then((res) => res.json())
-          .then((locationData) => {
-            setUserLocationData(locationData);
-            setLocalTemp(Math.floor(locationData?.current?.temp));
-            setLocalTempFeelsLike(
-              Math.floor(locationData?.current?.feels_like)
-            );
-            localStorage.setItem(
-              'userLocationData',
-              JSON.stringify(locationData)
-            );
-          })
-          .catch((e) => console.log(e));
+        setLat(storedLocationData.lat);
+        setLon(storedLocationData.lon);
+        setUserLocationData(storedLocationData);
+        setLocalTemp(Math.floor(storedLocationData?.current?.temp));
+        setLocalTempFeelsLike(
+          Math.floor(storedLocationData?.current?.feels_like)
+        );
       }
     } catch (e) {
       console.log(e.message);
     }
   };
 
-  const filterCities = () => {
-    let possibleCities = [];
-    let notPossibleCities = [];
+  const getLocalWeatherDetails = async () => {
+    try {
+      const locationURL =
+        SERVER_URL +
+        new URLSearchParams({ lat: lat, lon: lon, units: 'imperial' });
 
-    if (localTemp > 50) {
-      beachCitiesData.forEach((city) => {
-        if (city?.details?.alert && city?.details?.alert?.length >= 1) {
-          if (!contains(city.reasons, 'currently under a weather alert')) {
-            city?.reasons?.push('currently under a weather alert');
-          }
-        }
-        if (city?.details?.current?.temp < 70) {
-          if (!contains(city.reasons, 'too cold')) {
-            city?.reasons?.push('too cold');
-          }
-        }
-        if (city?.details?.current?.wind_speed > 20) {
-          if (!contains(city.reasons, 'too windy')) {
-            city?.reasons?.push('too windy');
-          }
-        }
-        if (city?.details?.current?.weather[0]?.main === 'Clouds') {
-          if (!contains(city.reasons, 'too cloudy')) {
-            city?.reasons?.push('too cloudy');
-          }
-        }
-        if (city?.reasons?.length === 0) {
-          possibleCities.push(city);
-        } else {
-          notPossibleCities.push(city);
-        }
-      });
-      skiCitiesData.forEach((city) => {
-        if (!contains(city.reasons, 'too warm')) {
-          city?.reasons?.push('too warm');
-        }
-        notPossibleCities.push(city);
-      });
-    } else {
-      skiCitiesData.forEach((city) => {
-        if (city?.details?.alert && city.details?.alert?.length >= 1) {
-          if (!contains(city.reasons, 'currently under a weather alert')) {
-            city.reasons.push('currently under a weather alert');
-          }
-          notPossibleCities.push(city);
-        } else {
-          possibleCities.push(city);
-        }
-      });
-      beachCitiesData.forEach((city) => {
-        if (!contains(city.reasons, 'too cold')) {
-          city.reasons.push('too cold');
-        }
-        notPossibleCities.push(city);
-      });
+      await fetch(locationURL, {
+        method: 'get',
+        headers: {
+          ContentType: 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .then((locationData) => {
+          setUserLocationData(locationData);
+          setLocalTemp(Math.floor(locationData?.current?.temp));
+          setLocalTempFeelsLike(Math.floor(locationData?.current?.feels_like));
+          storeLocalWithExpiry('userLocationData', locationData, 86400000);
+        })
+        .catch((e) => console.log(e));
+    } catch (e) {
+      console.log(e.message);
     }
-
-    setRecommendedCities(possibleCities);
-    setRejectedCities(notPossibleCities);
   };
 
+  const populateCityData = async (cityGroup, city) => {
+    try {
+      const cityGroupData = getLocalWithExpiry(cityGroup);
+      if (cityGroupData) {
+        if (cityExists(cityGroupData, city)) {
+          updateCityDataState(cityGroup, cityGroupData);
+        } else {
+          await updateCityData(cityGroup, city);
+        }
+      } else {
+        await updateCityData(cityGroup, city);
+      }
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+
+  const updateCityData = async (cityGroup, city) => {
+    await getCityWeatherDetails(city.lat, city.lng)
+      .then((details) => {
+        city.details = details;
+        city.type = cityGroup === 'beachCities' ? 'beach' : 'ski';
+        city.reasons = [];
+        updateCityDataState(cityGroup, city);
+        if (cityGroup === 'beachCities') {
+          storeLocalWithExpiry(
+            cityGroup,
+            beachCitiesData,
+            LOCAL_STORAGE_TTL_MS
+          );
+        } else {
+          storeLocalWithExpiry(cityGroup, skiCitiesData, LOCAL_STORAGE_TTL_MS);
+        }
+      })
+      .catch((e) => console.log(e.message));
+  };
+
+  const updateCityDataState = (cityGroup, cityData) => {
+    if (cityGroup === 'beachCities') {
+      setBeachCitiesData(cityData);
+    } else {
+      setSkiCitiesData(cityData);
+    }
+  };
+
+  const filterCities = () => {
+    beachCitiesData.forEach((city) => {
+      if (!city.details) return;
+      if (!city.reasons) city.reasons = [];
+      if (hasWeatherWarning(city)) {
+        city.reasons?.push('has weather warning');
+      }
+      if (city?.details?.current?.temp < 70) {
+        city.reasons?.push('too cold');
+      }
+      if (city?.details?.current?.wind_speed > 20) {
+        city.reasons?.push('too windy');
+      }
+      if (city?.details?.current?.weather[0]?.description?.includes('cloud')) {
+        city.reasons?.push('too cloudy');
+      }
+
+      if (city?.reasons?.length > 0) {
+        setRejectedCities((prevRejected) => [...prevRejected, city]);
+      } else {
+        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+      }
+    });
+
+    skiCitiesData.forEach((city) => {
+      if (!city.details) return;
+      if (!city.reasons) city.reasons = [];
+      if (hasWeatherWarning(city)) {
+        city?.reasons?.push('has weather warning');
+      }
+      if (city?.details?.current?.temp > 50) {
+        city?.reasons?.push('too warm for skiing');
+      }
+
+      if (city?.reasons?.length > 0) {
+        setRejectedCities((prevRejected) => [...prevRejected, city]);
+      } else {
+        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+      }
+    });
+  };
+
+  //-------- JSX Rendering --------//
   const renderHeader = () => {
     return (
-      <header className='border-b-2'>
-        <div className='flex flex-row items-end justify-start text-xl first-letter p-px m-3 '>
+      <header className='z-50 fixed pt-16 pl-16 bg-white w-full'>
+        <div className='flex flex-row items-end justify-start text-xl first-letter p-px m-auto border-b-2'>
           <img className='max-h-10 max-w-10' src='plane.svg' alt='plane logo' />
           <h1 className='text-2xl font-semibold'>
             Your next vacation is a click away
           </h1>
+        </div>
+        <div className='left-20 flex flex-col flex-wrap items-left text-sm p-px m-1'>
+          <h2>
+            Current temperature: {localTemp ? localTemp : ' '}
+            {'\u00B0'} F The temperature feels like:{' '}
+            {localTempFeelsLike ? localTempFeelsLike : ' '}
+            {'\u00B0'} F
+          </h2>
         </div>
       </header>
     );
@@ -217,17 +216,11 @@ export default function App() {
   const renderCityGrid = () => {
     return (
       <>
-        <div id='city grid component'>
-          <div className='col-xs-12'>
-            <p>
-              <strong>Select the appropriate optical cable:</strong>
-            </p>
-            <div className='category__nav flex flex-row m-auto p-px justify-around align-middle fixed'>
-              <CheckBox name='beach' />
-              <CheckBox name='skiing' />
-              <CheckBox name='hide' />
-            </div>
-          </div>
+        <div className='grid-cols-6'>
+          <p>
+            <strong>Location type</strong>
+          </p>
+          <CityFilterBar />
           {renderCities(recommendedCities)}
           {showUnrecommended ? renderCities(rejectedCities) : null}
         </div>
@@ -240,21 +233,22 @@ export default function App() {
   };
 
   return (
-    <div>
-      <AppContext.Provider value={{ showUnrecommended, setShowUnrecommended }}>
+    <div className='flex flex-row'>
+      <AppContext.Provider
+        value={{
+          showUnrecommended,
+          setShowUnrecommended,
+          showBeach,
+          setShowBeach,
+          showSki,
+          setShowSki,
+        }}
+      >
         {renderHeader()}
         <main>
-          <div className='left-20 flex flex-col items-left text-sm p-px m-1'>
-            <h2>
-              Current temperature: {localTemp ? localTemp : ' '}
-              {'\u00B0'} F The temperature feels like:{' '}
-              {localTempFeelsLike ? localTempFeelsLike : ' '}
-              {'\u00B0'} F
-            </h2>
-          </div>
-          <div className='items-center container mx-auto p-8 m-10'>
+          <div className='items-center container mx-auto p-9 m-20'>
             <div className='flex flex-row items-stretch container mx-auto p-8'>
-              {recommendedCities.length > 0 ? renderCityGrid() : null}
+              {renderCityGrid()}
             </div>
           </div>
         </main>

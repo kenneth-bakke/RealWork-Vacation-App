@@ -16,25 +16,34 @@ const cityExists = (cityData, city) => {
 };
 
 const contains = (reasons, reason) => {
-  for (let i = 0; i < reasons.length; i++) {
+  for (let i = 0; i < reasons?.length; i++) {
     if (reasons[i] === reason) return true;
   }
   return false;
 };
 
-const checkLocalStorage = (key) => {
-  try {
-    const storageData = localStorage.getItem(key);
-    if (storageData) {
-      return JSON.parse(storageData);
-    } else {
-      localStorage.setItem(key, '[]');
-      return null;
-    }
-  } catch (e) {
-    console.log(e.message);
+const getLocalWithExpiry = (key) => {
+  const itemStr = localStorage.getItem(key);
+  if (!itemStr) return null;
+  const item = JSON.parse(itemStr);
+  const now = new Date();
+
+  if (now.getTime() > item.expiry) {
+    localStorage.removeItem(key);
     return null;
   }
+  return item.value;
+};
+
+const storeLocalWithExpiry = (key, value, ttl) => {
+  const now = new Date();
+
+  const item = {
+    value: value,
+    expiry: now.getTime() + ttl,
+  };
+
+  localStorage.setItem(key, JSON.stringify(item));
 };
 
 const getCityWeatherDetails = async (lat, lon) => {
@@ -56,11 +65,17 @@ const getCityWeatherDetails = async (lat, lon) => {
   }
 };
 
+const hasWeatherWarning = (city) => {
+  return city?.alert && city?.alert?.length > 0;
+};
+
 module.exports = {
   capitalize: capitalize,
   cityExists: cityExists,
   contains: contains,
-  checkLocalStorage: checkLocalStorage,
   getCityWeatherDetails: getCityWeatherDetails,
+  getLocalWithExpiry: getLocalWithExpiry,
+  hasWeatherWarning: hasWeatherWarning,
+  storeLocalWithExpiry: storeLocalWithExpiry,
   SERVER_URL: SERVER_URL,
 };

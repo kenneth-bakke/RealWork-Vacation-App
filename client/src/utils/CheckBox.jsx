@@ -4,15 +4,31 @@ import { capitalize } from './utils';
 
 export default function CheckBox({ name }) {
   const [isChecked, setIsChecked] = useState(name === 'hide' ? false : true);
-  const { showUnrecommended, setShowUnrecommended } = useContext(AppContext);
+  const {
+    showUnrecommended,
+    setShowUnrecommended,
+    showBeach,
+    setShowBeach,
+    showSki,
+    setShowSki,
+  } = useContext(AppContext);
 
   const toggleChecked = () => {
     setIsChecked(!isChecked);
-    setShowUnrecommended(isChecked);
+    if (name === 'hide') {
+      setShowUnrecommended(!showUnrecommended);
+    } else if (name === 'beach') {
+      setShowBeach(!showBeach);
+    } else if (name === 'ski') {
+      setShowSki(!showSki);
+    }
   };
 
   return (
-    <div onChange={name === 'hide' ? toggleChecked : null}>
+    <div
+      onChange={toggleChecked}
+      className='flex flex-row border-grey-light text-grey h-6 w-6 items-baseline rounded'
+    >
       <input
         type='checkbox'
         name={name}
