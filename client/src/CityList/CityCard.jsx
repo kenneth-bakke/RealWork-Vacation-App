@@ -18,11 +18,14 @@ export default function CityCard({ name, temp, wind, reasons, show }) {
           </div>
           <a
             href='#'
-            className={`border-t border-grey-light pt-2 text-xs text-grey-400 hover:text-red uppercase no-underline tracking-wide`}
+            className={`border-t border-grey-light pt-2 text-xs ${
+              !isRecommended ? 'text-red' : 'text-grey-400'
+            } uppercase no-underline tracking-wide`}
           >
             {isRecommended
               ? 'Recommended'
-              : reasons.map((reason) => reason).join(' and ')}
+              : 'Not recommended. ' +
+                reasons.map((reason) => reason).join(' and ')}
           </a>
         </div>
       </div>

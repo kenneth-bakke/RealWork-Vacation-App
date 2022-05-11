@@ -12,7 +12,10 @@ export default function CheckBox({ name }) {
   };
 
   return (
-    <div onChange={name === 'hide' ? toggleChecked : null}>
+    <div
+      onChange={name === 'hide' ? toggleChecked : null}
+      className='inline border-grey-light text-grey h-6 w-6 align-baseline rounded'
+    >
       <input
         type='checkbox'
         name={name}
