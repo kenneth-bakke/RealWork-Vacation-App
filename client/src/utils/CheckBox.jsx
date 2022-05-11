@@ -4,7 +4,7 @@ import { capitalize } from './utils';
 
 export default function CheckBox({ name }) {
   const [isChecked, setIsChecked] = useState(name === 'hide' ? false : true);
-  const { showUnrecommended, setShowUnrecommended } = useContext(AppContext);
+  const { setShowUnrecommended } = useContext(AppContext);
 
   const toggleChecked = () => {
     setIsChecked(!isChecked);

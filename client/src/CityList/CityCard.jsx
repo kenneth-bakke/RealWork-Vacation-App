@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export default function CityCard({ name, temp, wind, reasons, show }) {
-  const [isRecommended, setIsRecommended] = useState(reasons.length === 0);
+  const [isRecommended, setIsRecommended] = useState(reasons?.length === 0);
 
   return (
     <div
@@ -25,7 +25,7 @@ export default function CityCard({ name, temp, wind, reasons, show }) {
             {isRecommended
               ? 'Recommended'
               : 'Not recommended. ' +
-                reasons.map((reason) => reason).join(' and ')}
+                reasons?.map((reason) => reason).join(' and ')}
           </a>
         </div>
       </div>
