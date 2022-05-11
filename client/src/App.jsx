@@ -11,6 +11,7 @@ import {
   getCityWeatherDetails,
   getLocalWithExpiry,
   storeLocalWithExpiry,
+  hasWeatherWarning,
   SERVER_URL,
 } from './utils/utils';
 
@@ -25,6 +26,8 @@ export default function App() {
   const [recommendedCities, setRecommendedCities] = useState([]);
   const [rejectedCities, setRejectedCities] = useState([]);
   const [showUnrecommended, setShowUnrecommended] = useState(true);
+  const [showBeach, setShowBeach] = useState(true);
+  const [showSki, setShowSki] = useState(true);
 
   const LOCAL_STORAGE_TTL_MS = 3600 * 1000;
 
@@ -41,6 +44,13 @@ export default function App() {
     }, 400);
     return () => clearTimeout(clearId);
   }, []);
+
+  useEffect(() => {
+    const clearId = setTimeout(() => {
+      filterCities();
+    }, 400);
+    return () => clearTimeout(clearId);
+  }, [beachCitiesData, skiCitiesData]);
 
   const getLocation = () => {
     try {
@@ -71,33 +81,24 @@ export default function App() {
 
   const getLocalWeatherDetails = async () => {
     try {
-      const locationData = getLocalWithExpiry('userLocationData');
-      if (locationData) {
-        setUserLocationData(locationData);
-        setLocalTemp(Math.floor(locationData?.current?.temp));
-        setLocalTempFeelsLike(Math.floor(locationData?.current?.feels_like));
-      } else {
-        const locationURL =
-          SERVER_URL +
-          new URLSearchParams({ lat: lat, lon: lon, units: 'imperial' });
+      const locationURL =
+        SERVER_URL +
+        new URLSearchParams({ lat: lat, lon: lon, units: 'imperial' });
 
-        await fetch(locationURL, {
-          method: 'get',
-          headers: {
-            ContentType: 'application/json',
-          },
+      await fetch(locationURL, {
+        method: 'get',
+        headers: {
+          ContentType: 'application/json',
+        },
+      })
+        .then((res) => res.json())
+        .then((locationData) => {
+          setUserLocationData(locationData);
+          setLocalTemp(Math.floor(locationData?.current?.temp));
+          setLocalTempFeelsLike(Math.floor(locationData?.current?.feels_like));
+          storeLocalWithExpiry('userLocationData', locationData, 86400000);
         })
-          .then((res) => res.json())
-          .then((locationData) => {
-            setUserLocationData(locationData);
-            setLocalTemp(Math.floor(locationData?.current?.temp));
-            setLocalTempFeelsLike(
-              Math.floor(locationData?.current?.feels_like)
-            );
-            storeLocalWithExpiry('userLocationData', locationData, 86400000);
-          })
-          .catch((e) => console.log(e));
-      }
+        .catch((e) => console.log(e));
     } catch (e) {
       console.log(e.message);
     }
@@ -124,6 +125,7 @@ export default function App() {
     await getCityWeatherDetails(city.lat, city.lng)
       .then((details) => {
         city.details = details;
+        city.type = cityGroup === 'beachCities' ? 'beach' : 'ski';
         city.reasons = [];
         updateCityDataState(cityGroup, city);
         if (cityGroup === 'beachCities') {
@@ -145,6 +147,48 @@ export default function App() {
     } else {
       setSkiCitiesData(cityData);
     }
+  };
+
+  const filterCities = () => {
+    beachCitiesData.forEach((city) => {
+      if (!city.details) return;
+      if (!city.reasons) city.reasons = [];
+      if (hasWeatherWarning(city)) {
+        city.reasons?.push('has weather warning');
+      }
+      if (city?.details?.current?.temp < 70) {
+        city.reasons?.push('too cold');
+      }
+      if (city?.details?.current?.wind_speed > 20) {
+        city.reasons?.push('too windy');
+      }
+      if (city?.details?.current?.weather[0]?.description?.includes('cloud')) {
+        city.reasons?.push('too cloudy');
+      }
+
+      if (city?.reasons?.length > 0) {
+        setRejectedCities((prevRejected) => [...prevRejected, city]);
+      } else {
+        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+      }
+    });
+
+    skiCitiesData.forEach((city) => {
+      if (!city.details) return;
+      if (!city.reasons) city.reasons = [];
+      if (hasWeatherWarning(city)) {
+        city?.reasons?.push('has weather warning');
+      }
+      if (city?.details?.current?.temp > 50) {
+        city?.reasons?.push('too warm for skiing');
+      }
+
+      if (city?.reasons?.length > 0) {
+        setRejectedCities((prevRejected) => [...prevRejected, city]);
+      } else {
+        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+      }
+    });
   };
 
   //-------- JSX Rendering --------//
@@ -172,13 +216,11 @@ export default function App() {
   const renderCityGrid = () => {
     return (
       <>
-        <div id='city grid component'>
-          <div className='col-xs-12'>
-            <p>
-              <strong>Location type</strong>
-            </p>
-            <CityFilterBar />
-          </div>
+        <div className='grid-cols-6'>
+          <p>
+            <strong>Location type</strong>
+          </p>
+          <CityFilterBar />
           {renderCities(recommendedCities)}
           {showUnrecommended ? renderCities(rejectedCities) : null}
         </div>
@@ -192,7 +234,16 @@ export default function App() {
 
   return (
     <div className='flex flex-row'>
-      <AppContext.Provider value={{ showUnrecommended, setShowUnrecommended }}>
+      <AppContext.Provider
+        value={{
+          showUnrecommended,
+          setShowUnrecommended,
+          showBeach,
+          setShowBeach,
+          showSki,
+          setShowSki,
+        }}
+      >
         {renderHeader()}
         <main>
           <div className='items-center container mx-auto p-9 m-20'>

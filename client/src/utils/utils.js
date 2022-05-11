@@ -22,17 +22,6 @@ const contains = (reasons, reason) => {
   return false;
 };
 
-const storeLocalWithExpiry = (key, value, ttl) => {
-  const now = new Date();
-
-  const item = {
-    value: value,
-    expiry: now.getTime() + ttl,
-  };
-
-  localStorage.setItem(key, JSON.stringify(item));
-};
-
 const getLocalWithExpiry = (key) => {
   const itemStr = localStorage.getItem(key);
   if (!itemStr) return null;
@@ -44,6 +33,17 @@ const getLocalWithExpiry = (key) => {
     return null;
   }
   return item.value;
+};
+
+const storeLocalWithExpiry = (key, value, ttl) => {
+  const now = new Date();
+
+  const item = {
+    value: value,
+    expiry: now.getTime() + ttl,
+  };
+
+  localStorage.setItem(key, JSON.stringify(item));
 };
 
 const getCityWeatherDetails = async (lat, lon) => {
@@ -65,12 +65,17 @@ const getCityWeatherDetails = async (lat, lon) => {
   }
 };
 
+const hasWeatherWarning = (city) => {
+  return city?.alert && city?.alert?.length > 0;
+};
+
 module.exports = {
   capitalize: capitalize,
   cityExists: cityExists,
   contains: contains,
   getCityWeatherDetails: getCityWeatherDetails,
   getLocalWithExpiry: getLocalWithExpiry,
+  hasWeatherWarning: hasWeatherWarning,
   storeLocalWithExpiry: storeLocalWithExpiry,
   SERVER_URL: SERVER_URL,
 };
