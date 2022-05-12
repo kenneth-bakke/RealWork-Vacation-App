@@ -55,7 +55,10 @@ export default function App() {
   const getLocation = () => {
     try {
       const storedLocationData = getLocalWithExpiry('userLocationData');
-      if (!storedLocationData) {
+      if (
+        !storedLocationData ||
+        (storedLocationData.lat === 0 && storedLocationData.lon === 0)
+      ) {
         if ('geolocation' in navigator) {
           navigator.geolocation.getCurrentPosition(function (position) {
             setLat(position.coords.latitude);
@@ -96,7 +99,11 @@ export default function App() {
           setUserLocationData(locationData);
           setLocalTemp(Math.floor(locationData?.current?.temp));
           setLocalTempFeelsLike(Math.floor(locationData?.current?.feels_like));
-          storeLocalWithExpiry('userLocationData', locationData, 86400000);
+          storeLocalWithExpiry(
+            'userLocationData',
+            locationData,
+            LOCAL_STORAGE_TTL_MS
+          );
         })
         .catch((e) => console.log(e));
     } catch (e) {
@@ -150,73 +157,104 @@ export default function App() {
   };
 
   const filterCities = () => {
-    beachCitiesData.forEach((city) => {
-      if (!city.details) return;
-      if (!city.reasons) city.reasons = [];
-      if (hasWeatherWarning(city)) {
-        city.reasons?.push('has weather warning');
-      }
-      if (city?.details?.current?.temp < 70) {
-        city.reasons?.push('too cold');
-      }
-      if (city?.details?.current?.wind_speed > 20) {
-        city.reasons?.push('too windy');
-      }
-      if (city?.details?.current?.weather[0]?.description?.includes('cloud')) {
-        city.reasons?.push('too cloudy');
-      }
-
-      if (city?.reasons?.length > 0) {
-        if (rejectedCities.includes(city)) {
-          const indexOfOldVersion = rejectedCities.indexOf(city);
-          const prevRejectedCities = [...rejectedCities];
-          prevRejectedCities[indexOfOldVersion] = city;
-          setRejectedCities(prevRejectedCities);
-        } else {
-          setRejectedCities((prevRejected) => [...prevRejected, city]);
+    if (beachCitiesData && beachCitiesData.length > 0) {
+      beachCitiesData?.forEach((city) => {
+        if (!city.details) return;
+        if (!city.reasons) city.reasons = [];
+        if (hasWeatherWarning(city)) {
+          city.reasons?.push('has weather warning');
         }
+        if (city?.details?.current?.temp < 70) {
+          city.reasons?.push('too cold');
+        }
+        if (city?.details?.current?.wind_speed > 20) {
+          city.reasons?.push('too windy');
+        }
+        if (
+          city?.details?.current?.weather[0]?.description?.includes('cloud')
+        ) {
+          city.reasons?.push('too cloudy');
+        }
+
+        sortCity(city);
+
+        // if (city?.reasons?.length > 0) {
+        //   if (rejectedCities.includes(city)) {
+        //     const indexOfOldVersion = rejectedCities.indexOf(city);
+        //     const prevRejectedCities = [...rejectedCities];
+        //     prevRejectedCities[indexOfOldVersion] = city;
+        //     setRejectedCities(prevRejectedCities);
+        //   } else {
+        //     setRejectedCities((prevRejected) => [...prevRejected, city]);
+        //   }
+        // } else {
+        //   if (recommendedCities.includes(city)) {
+        //     const indexOfOldVersion = recommendedCities.indexOf(city);
+        //     const prevRecommendedCities = [...recommendedCities];
+        //     prevRecommendedCities[indexOfOldVersion] = city;
+        //     setRejectedCities(prevRecommendedCities);
+        //   } else {
+        //     setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+        //   }
+        // }
+      });
+    }
+    if (skiCitiesData && skiCitiesData.length > 0) {
+      skiCitiesData?.forEach((city) => {
+        if (!city.details) return;
+        if (!city.reasons) city.reasons = [];
+        if (hasWeatherWarning(city)) {
+          city?.reasons?.push('has weather warning');
+        }
+        if (city?.details?.current?.temp > 50) {
+          city?.reasons?.push('too warm for skiing');
+        }
+
+        sortCity(city);
+      });
+    }
+
+    // if (city?.reasons?.length > 0) {
+    //   if (rejectedCities.includes(city)) {
+    //     const indexOfOldVersion = rejectedCities.indexOf(city);
+    //     const prevRejectedCities = [...rejectedCities];
+    //     prevRejectedCities[indexOfOldVersion] = city;
+    //     setRejectedCities(prevRejectedCities);
+    //   } else {
+    //     setRejectedCities((prevRejected) => [...prevRejected, city]);
+    //   }
+    // } else {
+    //   if (recommendedCities.includes(city)) {
+    //     const indexOfOldVersion = recommendedCities.indexOf(city);
+    //     const prevRecommendedCities = [...recommendedCities];
+    //     prevRecommendedCities[indexOfOldVersion] = city;
+    //     setRejectedCities(prevRecommendedCities);
+    //   } else {
+    //     setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+    //   }
+    // }
+  };
+
+  const sortCity = (city) => {
+    if (city?.reasons?.length > 0) {
+      if (rejectedCities.includes(city)) {
+        const indexOfOldVersion = rejectedCities.indexOf(city);
+        const prevRejectedCities = [...rejectedCities];
+        prevRejectedCities[indexOfOldVersion] = city;
+        setRejectedCities(prevRejectedCities);
       } else {
-        if (recommendedCities.includes(city)) {
-          const indexOfOldVersion = recommendedCities.indexOf(city);
-          const prevRecommendedCities = [...recommendedCities];
-          prevRecommendedCities[indexOfOldVersion] = city;
-          setRejectedCities(prevRecommendedCities);
-        } else {
-          setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
-        }
+        setRejectedCities((prevRejected) => [...prevRejected, city]);
       }
-    });
-
-    skiCitiesData.forEach((city) => {
-      if (!city.details) return;
-      if (!city.reasons) city.reasons = [];
-      if (hasWeatherWarning(city)) {
-        city?.reasons?.push('has weather warning');
-      }
-      if (city?.details?.current?.temp > 50) {
-        city?.reasons?.push('too warm for skiing');
-      }
-
-      if (city?.reasons?.length > 0) {
-        if (rejectedCities.includes(city)) {
-          const indexOfOldVersion = rejectedCities.indexOf(city);
-          const prevRejectedCities = [...rejectedCities];
-          prevRejectedCities[indexOfOldVersion] = city;
-          setRejectedCities(prevRejectedCities);
-        } else {
-          setRejectedCities((prevRejected) => [...prevRejected, city]);
-        }
+    } else {
+      if (recommendedCities.includes(city)) {
+        const indexOfOldVersion = recommendedCities.indexOf(city);
+        const prevRecommendedCities = [...recommendedCities];
+        prevRecommendedCities[indexOfOldVersion] = city;
+        setRejectedCities(prevRecommendedCities);
       } else {
-        if (recommendedCities.includes(city)) {
-          const indexOfOldVersion = recommendedCities.indexOf(city);
-          const prevRecommendedCities = [...recommendedCities];
-          prevRecommendedCities[indexOfOldVersion] = city;
-          setRejectedCities(prevRecommendedCities);
-        } else {
-          setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
-        }
+        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
       }
-    });
+    }
   };
 
   //-------- JSX Rendering --------//
