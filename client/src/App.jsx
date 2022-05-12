@@ -58,15 +58,7 @@ export default function App() {
       filterCities();
     }, 400);
     return () => clearTimeout(clearId);
-  }, [
-    localTemp,
-    localTempFeelsLike,
-    userLocationData,
-    lat,
-    lon,
-    beachCitiesData,
-    skiCitiesData,
-  ]);
+  }, [beachCitiesData, skiCitiesData]);
 
   const getLocation = () => {
     try {
