@@ -1,4 +1,9 @@
 const unusedLetters = require('../unusedLetters');
+const {
+  animate,
+  replaceCharacterAtIndex,
+  copyAndReplaceWithX,
+} = require('../particleChamber');
 
 describe('Unused letters', () => {
   it('Returns a string', () => {
@@ -23,4 +28,25 @@ describe('Unused letters', () => {
   });
 });
 
-describe('Particle chamber', () => {});
+describe('Particle chamber', () => {
+  it('replaces a character at the correct index', () => {
+    const replaced = replaceCharacterAtIndex('hello', 1, 'a');
+    expect(replaced).toBe('hallo');
+  });
+
+  it('creates a copy of the string with X replacing L and R', () => {
+    const copy = copyAndReplaceWithX('..R..L..');
+    expect(copy).toBe('..X..X..');
+  });
+
+  it('Returns an array', () => {
+    const animationFrames = animate('..R....', 2);
+    expect(animationFrames).toEqual(expect.arrayContaining(['..X....']));
+  });
+
+  it('Returns an array containing each appropriate frame of a single particle chamber', () => {
+    const particleFrames = animate('..R....', 2);
+    const expectedFrames = ['..R....', '....R..', '......R', '.......'];
+    expect(particleFrames).toEqual(expect.arrayContaining(expectedFrames));
+  });
+});

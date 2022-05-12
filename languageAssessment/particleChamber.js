@@ -35,5 +35,93 @@
  */
 
 function animate(initialPosition, speed) {
-  // TODO
+  if (!initialPosition || !speed) return initialPosition;
+  const animationFrames = [copyAndReplaceWithX(initialPosition)];
+  let chamberCopy = initialPosition.split('');
+  let chamberContainsParticles = true;
+
+  while (chamberContainsParticles) {
+    let nextPosition = [];
+
+    for (let i = 0; i < chamberCopy.length; i++) {
+      let nextRightIndex = i + speed;
+      let nextLeftIndex = i - speed;
+
+      if (chamberCopy[i] === 'R') {
+        if (
+          chamberCopy[nextRightIndex] === '.' ||
+          chamberCopy[nextRightIndex] === 'R'
+        ) {
+          nextPosition[i] = '.';
+          nextPosition[nextRightIndex] = 'R';
+        } else if (chamberCopy[nextRightIndex] === 'L') {
+          nextPosition[i] = 'L';
+          nextPosition[nextRightIndex] = 'R';
+        }
+      } else if (chamberCopy[i] === 'L') {
+        if (
+          champerCopy[nextLeftIndex] === '.' ||
+          chamberCopy[nextLeftIndex] === 'L'
+        ) {
+          nextPosition[nextLeftIndex] = 'L';
+          if (nextPosition[i] === 'R') {
+            continue;
+          } else {
+            nextPosition[i] = '.';
+          }
+        } else if (chamberCopy[nextLeftIndex] === 'R') {
+          nextPosition[i] = 'R';
+          nextPosition[nextLeftIndex] = 'L';
+        }
+      } else {
+        if (nextPosition[i] === 'R' || nextPosition[i] === 'L') {
+          continue;
+        } else {
+          nextPosition[i] = '.';
+        }
+      }
+    }
+
+    chamberCopy = nextPosition;
+    animationFrames.push(copyAndReplaceWithX(nextPosition.join('')));
+    if (chamberIsEmpty(nextPosition)) {
+      chamberContainsParticles = false;
+    }
+  }
+
+  return animationFrames;
 }
+
+function chamberIsEmpty(iterable) {
+  for (let i = 0; i < iterable.length; i++) {
+    if (iterable[i] !== '.') {
+      return false;
+    }
+  }
+  return true;
+}
+
+function copyAndReplaceWithX(string) {
+  let newString = [];
+  for (let i = 0; i < string.length; i++) {
+    if (string[i] === 'R' || string[i] === 'L') {
+      newString.push('X');
+    } else {
+      newString.push(string[i]);
+    }
+  }
+  return newString.join('');
+}
+
+function replaceCharacterAtIndex(string, index, char) {
+  if (index < 0 || index > string.length - 1) return string;
+  return string.substring(0, index) + char + string.substring(index + 1);
+}
+
+const animationFrames = animate('..R....', 2);
+
+module.exports = {
+  copyAndReplaceWithX: copyAndReplaceWithX,
+  replaceCharacterAtIndex: replaceCharacterAtIndex,
+  animate: animate,
+};
