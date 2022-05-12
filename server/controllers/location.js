@@ -33,6 +33,7 @@ module.exports = {
         cache[lat + ',' + lon] = data;
         res.status(response.status).send(JSON.stringify(data));
       } catch (e) {
+        console.log(e);
         res.status(400).send(e);
       }
     } else {
