@@ -57,6 +57,14 @@ function animate(initialPosition, speed) {
         } else if (chamberCopy[nextRightIndex] === 'L') {
           nextPosition[i] = 'L';
           nextPosition[nextRightIndex] = 'R';
+        } else {
+          if (nextRightIndex >= chamberCopy.length) {
+            if (nextPosition[i] === 'R' || nextPosition[i] === 'L') {
+              continue;
+            } else {
+              nextPosition[i] = '.';
+            }
+          }
         }
       } else if (chamberCopy[i] === 'L') {
         if (
@@ -107,7 +115,7 @@ function copyAndReplaceWithX(string) {
     if (string[i] === 'R' || string[i] === 'L') {
       newString.push('X');
     } else {
-      newString.push(string[i]);
+      newString.push('.');
     }
   }
   return newString.join('');
