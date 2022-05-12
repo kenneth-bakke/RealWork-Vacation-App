@@ -41,7 +41,7 @@ function animate(initialPosition, speed) {
   let chamberContainsParticles = true;
 
   while (chamberContainsParticles) {
-    let nextPosition = [];
+    let nextPosition = new Array(chamberCopy.length).fill('.');
 
     for (let i = 0; i < chamberCopy.length; i++) {
       let nextRightIndex = i + speed;
@@ -68,7 +68,7 @@ function animate(initialPosition, speed) {
         }
       } else if (chamberCopy[i] === 'L') {
         if (
-          champerCopy[nextLeftIndex] === '.' ||
+          chamberCopy[nextLeftIndex] === '.' ||
           chamberCopy[nextLeftIndex] === 'L'
         ) {
           nextPosition[nextLeftIndex] = 'L';
@@ -80,6 +80,14 @@ function animate(initialPosition, speed) {
         } else if (chamberCopy[nextLeftIndex] === 'R') {
           nextPosition[i] = 'R';
           nextPosition[nextLeftIndex] = 'L';
+        } else {
+          if (nextLeftIndex <= 0) {
+            if (nextPosition[i] === 'R' || nextPosition[i] === 'L') {
+              continue;
+            } else {
+              nextPosition[i] === '.';
+            }
+          }
         }
       } else {
         if (nextPosition[i] === 'R' || nextPosition[i] === 'L') {

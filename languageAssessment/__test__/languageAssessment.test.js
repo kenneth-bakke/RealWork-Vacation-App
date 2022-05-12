@@ -30,6 +30,7 @@ describe('Unused letters', () => {
 
 describe('Particle chamber', () => {
   let particleFrames, expectedFrames;
+
   it('replaces a character at the correct index', () => {
     const replaced = replaceCharacterAtIndex('hello', 1, 'a');
     expect(replaced).toBe('hallo');
@@ -58,12 +59,12 @@ describe('Particle chamber', () => {
   });
 
   it('Returns an array containing each appropriate frame of a multiple particle, multi-directional chamber', () => {
-    particleFrames = animate('LRLR.LRLR', 2);
-    expectedFrames = ['XXXX.XXXX', 'X..X.X..X', '.X.....X.', '.........'];
-    expect(particleFrames).toEqual(expectedFrames);
-
     particleFrames = animate('RR..LRL', 3);
     expectedFrames = ['XX..XXX', '.X.XX..', 'X.....X', '.......'];
+    expect(particleFrames).toEqual(expectedFrames);
+
+    particleFrames = animate('LRLR.LRLR', 2);
+    expectedFrames = ['XXXX.XXXX', 'X..X.X..X', '.X.....X.', '.........'];
     expect(particleFrames).toEqual(expectedFrames);
   });
 
