@@ -112,6 +112,7 @@ export default function App() {
           );
         })
         .then(filterCities)
+        .then(removeDuplicateCities)
         .catch((e) => console.log(e));
     } catch (e) {
       console.log(e.message);
@@ -204,29 +205,20 @@ export default function App() {
 
   const sortCity = (city) => {
     if (city?.reasons?.length > 0) {
-      if (rejectedCities.includes(city)) {
-        const indexOfOldVersion = rejectedCities.indexOf(city);
-        const prevRejectedCities = [...rejectedCities];
-        prevRejectedCities[indexOfOldVersion] = city;
-        setRejectedCities(prevRejectedCities);
-      } else {
-        setRejectedCities((prevRejected) => {
-          return [...prevRejected, city]
-        });
-      }
+      setRejectedCities((prevRejected) => {
+        return Array.from(new Set([...prevRejected, city]));
+      })
     } else {
-      if (recommendedCities.includes(city)) {
-        const indexOfOldVersion = recommendedCities.indexOf(city);
-        const prevRecommendedCities = [...recommendedCities];
-        prevRecommendedCities[indexOfOldVersion] = city;
-        setRejectedCities(prevRecommendedCities);
-      } else {
-        setRecommendedCities((prevRecommended) => {
-          return [...prevRecommended, city]
-        });
-      }
+      setRecommendedCities((prevRecommended) => {
+        return Array.from(new Set([...prevRecommended, city]));
+      })
     }
   };
+
+  const removeDuplicateCities = () => {
+    const recommendedSet = new Set([recommendedCities]);
+    const rejectedSet = new Set([rejectedCities]);
+  }
 
   //-------- JSX Rendering --------//
   const renderHeader = () => {
