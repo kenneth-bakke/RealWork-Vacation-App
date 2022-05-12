@@ -29,8 +29,6 @@ describe('Unused letters', () => {
 });
 
 describe('Particle chamber', () => {
-  let particleFrames, expectedFrames;
-
   it('replaces a character at the correct index', () => {
     const replaced = replaceCharacterAtIndex('hello', 1, 'a');
     expect(replaced).toBe('hallo');
@@ -47,30 +45,41 @@ describe('Particle chamber', () => {
   });
 
   it('Returns an array containing each appropriate frame of a single particle chamber', () => {
-    particleFrames = animate('..R....', 2);
-    expectedFrames = ['..X....', '....X..', '......X', '.......'];
+    const particleFrames = animate('..R....', 2);
+    const expectedFrames = ['..X....', '....X..', '......X', '.......'];
     expect(particleFrames).toEqual(expectedFrames);
   });
 
   it('Returns an array containing each appropriate frame of a multiple particle chamber', () => {
-    particleFrames = animate('.RR....', 2);
-    expectedFrames = ['.XX....', '...XX..', '.....XX', '.......'];
+    const particleFrames = animate('.RR....', 2);
+    const expectedFrames = ['.XX....', '...XX..', '.....XX', '.......'];
     expect(particleFrames).toEqual(expectedFrames);
   });
 
   it('Returns an array containing each appropriate frame of a multiple particle, multi-directional chamber', () => {
-    particleFrames = animate('RR..LRL', 3);
-    expectedFrames = ['XX..XXX', '.X.XX..', 'X.....X', '.......'];
+    const particleFrames = animate('RR..LRL', 3);
+    const expectedFrames = ['XX..XXX', '.X.XX..', 'X.....X', '.......'];
     expect(particleFrames).toEqual(expectedFrames);
 
-    particleFrames = animate('LRLR.LRLR', 2);
-    expectedFrames = ['XXXX.XXXX', 'X..X.X..X', '.X.....X.', '.........'];
-    expect(particleFrames).toEqual(expectedFrames);
+    const particleFramesTwo = animate('LRLR.LRLR', 2);
+    const expectedFramesTwo = [
+      'XXXX.XXXX',
+      'X..X.X..X',
+      '.X.X.X.X.',
+      '.X.....X.',
+      '.........',
+    ];
+    expect(particleFramesTwo).toEqual(expectedFramesTwo);
   });
 
   it('Returns an array containing each appropriate frame of multiple particles at a fast speed', () => {
-    particleFrames = animate('RLRLRLRLRL', 10);
-    expectedFrames = ['XXXXXXXXXX', '..........'];
+    const particleFrames = animate('RLRLRLRLRL', 10);
+    const expectedFrames = ['XXXXXXXXXX', '..........'];
     expect(particleFrames).toEqual(expectedFrames);
+  });
+
+  it('Returns original string if speed or original string are invalid', () => {
+    expect(animate('', 2)).toBe('');
+    expect(animate('....R....', 0)).toBe('....R....');
   });
 });
