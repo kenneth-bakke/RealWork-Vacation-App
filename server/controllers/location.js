@@ -27,14 +27,13 @@ module.exports = {
       });
 
     if (isEmpty(cache) || !cache[lat + lon]) {
-      const response = await axios.get(API_URL);
-
       try {
+        const response = await axios.get(API_URL);
         const { data } = response;
         cache[lat + ',' + lon] = data;
         res.status(response.status).send(JSON.stringify(data));
       } catch (e) {
-        res.status(response.status).send(e);
+        res.status(400).send(e);
       }
     } else {
       res.status(200).send(JSON.stringify(cache));
