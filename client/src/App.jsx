@@ -54,14 +54,6 @@ export default function App() {
     return () => clearTimeout(clearId);
   }, [lat, lon]);
 
-  useEffect(() => {
-    const clearId = setTimeout(() => {
-      filterCities();
-    }, 400);
-
-    return () => clearTimeout(clearId);
-  }, [beachCitiesData, skiCitiesData]);
-
   const getLocation = () => {
     try {
       const storedLocationData = getLocalWithExpiry('userLocationData');
@@ -119,6 +111,7 @@ export default function App() {
             LOCAL_STORAGE_TTL_MS
           );
         })
+        .then(filterCities)
         .catch((e) => console.log(e));
     } catch (e) {
       console.log(e.message);
@@ -168,25 +161,6 @@ export default function App() {
     } else {
       setSkiCitiesData(cityData);
     }
-    // if (cityGroup === 'beachCities') {
-    //   if (beachCitiesData.includes(cityData)) {
-    //     const indexOfOldCityData = beachCitiesData.indexOf(cityData);
-    //     const prevBeachCitiesData = [...beachCitiesData];
-    //     prevBeachCitiesData[indexOfOldCityData] = cityData;
-    //     setBeachCitiesData(prevBeachCitiesData);
-    //   } else {
-    //     setBeachCitiesData((prevBeachCities) => [...prevBeachCities, cityData]);
-    //   }
-    // } else {
-    //   if (skiCitiesData.includes(cityData)) {
-    //     const indexOfOldCityData = skiCitiesData.indexOf(cityData);
-    //     const prevSkiCitiesData = [...skiCitiesData];
-    //     prevSkiCitiesData[indexOfOldCityData] = cityData;
-    //     setSkiCitiesData(prevSkiCitiesData);
-    //   } else {
-    //     setSkiCitiesData((prevSkiCities) => [...prevSkiCities, cityData]);
-    //   }
-    // }
   };
 
   const filterCities = () => {
@@ -236,7 +210,9 @@ export default function App() {
         prevRejectedCities[indexOfOldVersion] = city;
         setRejectedCities(prevRejectedCities);
       } else {
-        setRejectedCities((prevRejected) => [...prevRejected, city]);
+        setRejectedCities((prevRejected) => {
+          return [...prevRejected, city]
+        });
       }
     } else {
       if (recommendedCities.includes(city)) {
@@ -245,7 +221,9 @@ export default function App() {
         prevRecommendedCities[indexOfOldVersion] = city;
         setRejectedCities(prevRecommendedCities);
       } else {
-        setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
+        setRecommendedCities((prevRecommended) => {
+          return [...prevRecommended, city]
+        });
       }
     }
   };
