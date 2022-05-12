@@ -47,7 +47,7 @@ export default function App() {
 
   useEffect(() => {
     const clearId = setTimeout(() => {
-      filterCities();
+      getLocalWeatherDetails();
     }, 400);
 
     return () => clearTimeout(clearId);
@@ -58,19 +58,25 @@ export default function App() {
       filterCities();
     }, 400);
     return () => clearTimeout(clearId);
-  }, [beachCitiesData, skiCitiesData]);
+  }, [
+    localTemp,
+    localTempFeelsLike,
+    userLocationData,
+    lat,
+    lon,
+    beachCitiesData,
+    skiCitiesData,
+  ]);
 
   const getLocation = () => {
     try {
       const storedLocationData = getLocalWithExpiry('userLocationData');
       if (!storedLocationData) {
-        if (storedLocationData.lat === 0 && storedLocationData.lon === 0) {
-          updateLocalCoordinates();
-        }
+        updateLocalCoordinates();
       } else {
         setLat(storedLocationData.lat);
         setLon(storedLocationData.lon);
-        if (storedLocationData.lat === 0 && storedLocationData.lon === 0) {
+        if (!storedLocationData.lat && !storedLocationData.lon) {
           updateLocalCoordinates();
         }
         setUserLocationData(storedLocationData);
@@ -89,8 +95,8 @@ export default function App() {
       navigator.geolocation.getCurrentPosition(function (position) {
         setLat(position.coords.latitude);
         setLon(position.coords.longitude);
+        getLocalWeatherDetails();
       });
-      getLocalWeatherDetails();
     } else {
       alert('Could not determine your weather conditions');
     }
@@ -168,11 +174,28 @@ export default function App() {
     } else {
       setSkiCitiesData(cityData);
     }
+    // if (cityGroup === 'beachCities') {
+    //   if (beachCitiesData.includes(cityData)) {
+    //     const indexOfOldCityData = beachCitiesData.indexOf(cityData);
+    //     const prevBeachCitiesData = [...beachCitiesData];
+    //     prevBeachCitiesData[indexOfOldCityData] = cityData;
+    //     setBeachCitiesData(prevBeachCitiesData);
+    //   } else {
+    //     setBeachCitiesData((prevBeachCities) => [...prevBeachCities, cityData]);
+    //   }
+    // } else {
+    //   if (skiCitiesData.includes(cityData)) {
+    //     const indexOfOldCityData = skiCitiesData.indexOf(cityData);
+    //     const prevSkiCitiesData = [...skiCitiesData];
+    //     prevSkiCitiesData[indexOfOldCityData] = cityData;
+    //     setSkiCitiesData(prevSkiCitiesData);
+    //   } else {
+    //     setSkiCitiesData((prevSkiCities) => [...prevSkiCities, cityData]);
+    //   }
+    // }
   };
 
   const filterCities = () => {
-    setRecommendedCities([]);
-    setRejectedCities([]);
     if (beachCitiesData && beachCitiesData.length > 0) {
       beachCitiesData?.forEach((city) => {
         if (!city.details) return;
