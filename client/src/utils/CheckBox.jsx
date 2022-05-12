@@ -35,8 +35,12 @@ export default function CheckBox({ name }) {
         value={name}
         defaultChecked={isChecked}
       />
-      <label htmlFor={name}>
-        {name === 'hide' ? 'Hide unrecommended' : capitalize(name)}
+      <label htmlFor={name} className='min-w-max'>
+        {name === 'hide' && isChecked
+          ? 'Show unrecommended'
+          : name === 'hide' && !isChecked
+          ? 'Hide unrecommended'
+          : capitalize(name)}
       </label>
     </div>
   );
