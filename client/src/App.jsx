@@ -42,6 +42,7 @@ export default function App() {
         populateCityData('skiCities', city);
       });
     }, 400);
+
     return () => clearTimeout(clearId);
   }, []);
 
@@ -57,6 +58,7 @@ export default function App() {
     const clearId = setTimeout(() => {
       filterCities();
     }, 400);
+
     return () => clearTimeout(clearId);
   }, [beachCitiesData, skiCitiesData]);
 
