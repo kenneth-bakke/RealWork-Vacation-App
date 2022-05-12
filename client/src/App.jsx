@@ -49,28 +49,30 @@ export default function App() {
     const clearId = setTimeout(() => {
       filterCities();
     }, 400);
+
+    return () => clearTimeout(clearId);
+  }, [lat, lon]);
+
+  useEffect(() => {
+    const clearId = setTimeout(() => {
+      filterCities();
+    }, 400);
     return () => clearTimeout(clearId);
   }, [beachCitiesData, skiCitiesData]);
 
   const getLocation = () => {
     try {
       const storedLocationData = getLocalWithExpiry('userLocationData');
-      if (
-        !storedLocationData ||
-        (storedLocationData.lat === 0 && storedLocationData.lon === 0)
-      ) {
-        if ('geolocation' in navigator) {
-          navigator.geolocation.getCurrentPosition(function (position) {
-            setLat(position.coords.latitude);
-            setLon(position.coords.longitude);
-          });
-          getLocalWeatherDetails();
-        } else {
-          alert('Could not determine your weather conditions');
+      if (!storedLocationData) {
+        if (storedLocationData.lat === 0 && storedLocationData.lon === 0) {
+          updateLocalCoordinates();
         }
       } else {
         setLat(storedLocationData.lat);
         setLon(storedLocationData.lon);
+        if (storedLocationData.lat === 0 && storedLocationData.lon === 0) {
+          updateLocalCoordinates();
+        }
         setUserLocationData(storedLocationData);
         setLocalTemp(Math.floor(storedLocationData?.current?.temp));
         setLocalTempFeelsLike(
@@ -79,6 +81,18 @@ export default function App() {
       }
     } catch (e) {
       console.log(e.message);
+    }
+  };
+
+  const updateLocalCoordinates = () => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        setLat(position.coords.latitude);
+        setLon(position.coords.longitude);
+      });
+      getLocalWeatherDetails();
+    } else {
+      alert('Could not determine your weather conditions');
     }
   };
 
@@ -157,6 +171,8 @@ export default function App() {
   };
 
   const filterCities = () => {
+    setRecommendedCities([]);
+    setRejectedCities([]);
     if (beachCitiesData && beachCitiesData.length > 0) {
       beachCitiesData?.forEach((city) => {
         if (!city.details) return;
@@ -177,26 +193,6 @@ export default function App() {
         }
 
         sortCity(city);
-
-        // if (city?.reasons?.length > 0) {
-        //   if (rejectedCities.includes(city)) {
-        //     const indexOfOldVersion = rejectedCities.indexOf(city);
-        //     const prevRejectedCities = [...rejectedCities];
-        //     prevRejectedCities[indexOfOldVersion] = city;
-        //     setRejectedCities(prevRejectedCities);
-        //   } else {
-        //     setRejectedCities((prevRejected) => [...prevRejected, city]);
-        //   }
-        // } else {
-        //   if (recommendedCities.includes(city)) {
-        //     const indexOfOldVersion = recommendedCities.indexOf(city);
-        //     const prevRecommendedCities = [...recommendedCities];
-        //     prevRecommendedCities[indexOfOldVersion] = city;
-        //     setRejectedCities(prevRecommendedCities);
-        //   } else {
-        //     setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
-        //   }
-        // }
       });
     }
     if (skiCitiesData && skiCitiesData.length > 0) {
@@ -213,26 +209,6 @@ export default function App() {
         sortCity(city);
       });
     }
-
-    // if (city?.reasons?.length > 0) {
-    //   if (rejectedCities.includes(city)) {
-    //     const indexOfOldVersion = rejectedCities.indexOf(city);
-    //     const prevRejectedCities = [...rejectedCities];
-    //     prevRejectedCities[indexOfOldVersion] = city;
-    //     setRejectedCities(prevRejectedCities);
-    //   } else {
-    //     setRejectedCities((prevRejected) => [...prevRejected, city]);
-    //   }
-    // } else {
-    //   if (recommendedCities.includes(city)) {
-    //     const indexOfOldVersion = recommendedCities.indexOf(city);
-    //     const prevRecommendedCities = [...recommendedCities];
-    //     prevRecommendedCities[indexOfOldVersion] = city;
-    //     setRejectedCities(prevRecommendedCities);
-    //   } else {
-    //     setRecommendedCities((prevRecommended) => [...prevRecommended, city]);
-    //   }
-    // }
   };
 
   const sortCity = (city) => {
