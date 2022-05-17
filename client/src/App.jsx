@@ -207,18 +207,13 @@ export default function App() {
     if (city?.reasons?.length > 0) {
       setRejectedCities((prevRejected) => {
         return Array.from(new Set([...prevRejected, city]));
-      })
+      });
     } else {
       setRecommendedCities((prevRecommended) => {
         return Array.from(new Set([...prevRecommended, city]));
-      })
+      });
     }
   };
-
-  const removeDuplicateCities = () => {
-    const recommendedSet = new Set([recommendedCities]);
-    const rejectedSet = new Set([rejectedCities]);
-  }
 
   //-------- JSX Rendering --------//
   const renderHeader = () => {
